@@ -1,9 +1,22 @@
 require 'rspec'
 
-describe 'Temp directory creation' do
+describe WithTempdir do
 
-  it 'should create_and_remove_a_temp_directory' do
+  it 'should create and remove a directory' do
 
-    true.should == false
+    temp_dir = with_tempdir{|dir|
+      expect(File.directory? dir).to be_true
+      expect(File.exist? dir).to be_true
+      dir
+    }
+    expect(File.directory? temp_dir).to be_false
+    expect(File.exist? temp_dir).to be_false
   end
+
+  it 'should create the temp directory inside the /tmp folder' do
+    with_tempdir{|dir|
+      expect(dir).to match(/\/tmp\//)
+    }
+  end
+
 end
