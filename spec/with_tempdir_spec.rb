@@ -33,10 +33,24 @@ describe WithTempdir do
     }
   end
 
-  it 'should create files with content and return their names' do
+  it 'should create file with content and return its name' do
     with_tempdir_and_files('foo' => 'yay, content!') { |dir, files|
       puts "files returned: #{files}"
       files.each { |f| expect(File.read f ).to match(/yay, content/) }
+    }
+  end
+
+  it 'should create files with content and return their names' do
+    with_tempdir_and_files('foo' => 'yay, content!', 'bar' => 'lorem ipsum') { |dir, files|
+      puts "files returned: #{files}"
+      expect(files.map{|f| File.basename(f)}.sort).to eq(['bar', 'foo'])
+    }
+  end
+
+  it 'should create files with and without content and return their names' do
+    with_tempdir_and_files('foo', 'bar' => 'lorem ipsum') { |dir, files|
+      puts "files returned: #{files}"
+      expect(files.map{|f| File.basename(f)}.sort).to eq(['bar', 'foo'])
     }
   end
 

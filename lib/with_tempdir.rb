@@ -3,14 +3,13 @@ require_relative 'with_tempdir/version'
 module WithTempdir
 
   def with_tempdir(*filenames)
-    puts "filenames: #{filenames.inspect}"
     Dir.mktmpdir do |dir|
       make_tempfiles(dir, filenames)
       yield dir
     end
   end
 
-  def with_tempdir_and_files(filenames = {})
+  def with_tempdir_and_files(*filenames)
     Dir.mktmpdir do |dir|
       files = make_tempfiles(dir, filenames)
       yield(dir, files)
@@ -19,27 +18,22 @@ module WithTempdir
 
   def make_tempfiles(dir, filenames)
 
-    puts "filenames orig: #{filenames}"
+    names_and_content = filenames.each_with_object({}) { |f, hash|
+      hash.merge!(should_be_hashed(f) ? { f => '' } : f)
+    }
 
-    # TODO: this sucks, how do I coerce the input nicely?
-    if filenames.first.kind_of? Hash
-      filenames = filenames.first
-    end
-
-    if filenames.kind_of? Array
-      filenames = Hash[filenames.flatten.map{|f| [f, '']}]
-      puts "filenames are hashed #{filenames}"
-    end
-
-    filenames.reduce([]) do |resulting_filenames, file|
-
-      p "writing #{file[1]} to #{file[0]}"
+    names_and_content.reduce([]) do |resulting_filenames, file|
+      # p "writing #{file}, #{content}: #{file[1]} to #{file[0]}"
       file_name = File.join(dir, file[0])
       # not simply using the dir, since filenames may contain paths
       FileUtils.mkdir_p(File.dirname(file_name))
       open(file_name, 'w') { |f| f.write file[1] }
       resulting_filenames << file_name
     end
+  end
+
+  def should_be_hashed(f)
+    f.is_a?(String) || f.is_a?(Symbol)
   end
 
 # creating temp directories recursively
