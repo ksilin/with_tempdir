@@ -20,37 +20,45 @@ describe WithTempdir do
   end
 
   it 'should create files in the temp dir' do
-    with_tempdir('bar', 'foo') { |dir|
+    with_tempdir('bar', :foo) { |dir|
       files = Dir.glob("#{dir}/*")
-      expect(files.map{|f| File.basename(f)}).to eq(['bar', 'foo'])
+      expect(files.map { |f| File.basename(f) }).to eq(['bar', 'foo'])
     }
   end
 
   it 'should create files with content in the temp dir' do
-    with_tempdir('bar' => 'xxx', 'foo' => 'yyy') { |dir|
+    with_tempdir('bar' => 'xxx', :foo => 'yyy') { |dir|
       files = Dir.glob("#{dir}/*")
-      expect(files.map{|f| File.basename(f)}).to eq(['bar', 'foo'])
+      expect(files.map { |f| File.basename(f) }).to eq(['bar', 'foo'])
     }
   end
 
   it 'should create file with content and return its name' do
     with_tempdir_and_files('foo' => 'yay, content!') { |dir, files|
       puts "files returned: #{files}"
-      files.each { |f| expect(File.read f ).to match(/yay, content/) }
+      files.each { |f| expect(File.read f).to match(/yay, content/) }
     }
   end
 
   it 'should create files with content and return their names' do
-    with_tempdir_and_files('foo' => 'yay, content!', 'bar' => 'lorem ipsum') { |dir, files|
+    with_tempdir_and_files('foo' => 'yay, content!', :bar => 'lorem ipsum') { |dir, files|
       puts "files returned: #{files}"
-      expect(files.map{|f| File.basename(f)}.sort).to eq(['bar', 'foo'])
+      expect(files.map { |f| File.basename(f) }.sort).to eq(['bar', 'foo'])
     }
   end
 
-  it 'should create files with and without content and return their names' do
-    with_tempdir_and_files('foo', 'bar' => 'lorem ipsum') { |dir, files|
+  # this will not work:
+  # with_tempdir_and_files('foo', 'bar' => 'lorem ipsum', 'baz')
+  # an implicit hash has to be the last argument
+  # a reference was not so easy to find
+  # there are hundreds of blog posts about splatting,
+  # but those talking about implicit hash conversion seem to be rare
+  # http://www.ruby-doc.org/core-2.1.1/doc/syntax/calling_methods_rdoc.html#label-Array+to+Arguments+Conversion
+
+  it 'should create files with content and return their names using mixed areguments' do
+    with_tempdir_and_files({ 'foo' => 'yay, content!' }, 'bar', { :baz => 'lorem ipsum' }) { |dir, files|
       puts "files returned: #{files}"
-      expect(files.map{|f| File.basename(f)}.sort).to eq(['bar', 'foo'])
+      expect(files.map { |f| File.basename(f) }.sort).to eq(['bar', 'baz', 'foo'])
     }
   end
 

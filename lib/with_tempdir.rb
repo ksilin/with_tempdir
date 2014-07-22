@@ -18,16 +18,19 @@ module WithTempdir
 
   def make_tempfiles(dir, filenames)
 
-    names_and_content = filenames.each_with_object({}) { |f, hash|
-      hash.merge!(should_be_hashed(f) ? { f => '' } : f)
+    merged = filenames.each_with_object({}) { |f, result|
+      result.merge!(should_be_hashed(f) ? { f => '' } : f)
+    }
+    names_and_content = merged.each_with_object({}) { |(key, value), result|
+      result[key.to_s] = value
     }
 
-    names_and_content.reduce([]) do |resulting_filenames, file|
+    names_and_content.reduce([]) do |resulting_filenames, (name, content)|
       # p "writing #{file}, #{content}: #{file[1]} to #{file[0]}"
-      file_name = File.join(dir, file[0])
+      file_name = File.join(dir, name)
       # not simply using the dir, since filenames may contain paths
       FileUtils.mkdir_p(File.dirname(file_name))
-      open(file_name, 'w') { |f| f.write file[1] }
+      open(file_name, 'w') { |f| f.write content }
       resulting_filenames << file_name
     end
   end
