@@ -26,8 +26,8 @@ module WithTempdir
     }
 
     names_and_content.reduce([]) do |resulting_filenames, (name, content)|
-      # p "writing #{file}, #{content}: #{file[1]} to #{file[0]}"
       file_name = File.join(dir, name)
+      # p "writing #{content} to #{name}"
       # not simply using the dir, since filenames may contain paths
       FileUtils.mkdir_p(File.dirname(file_name))
       open(file_name, 'w') { |f| f.write content }
